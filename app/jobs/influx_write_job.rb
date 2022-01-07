@@ -1,7 +1,14 @@
-class InfluxWriteJob < ActiveJob::Base
-  # Automatically retry jobs that encountered a deadlock
-  # retry_on ActiveRecord::Deadlocked
+require 'json'
 
-  # Most jobs are safe to ignore if the underlying records are no longer available
-  # discard_on ActiveJob::DeserializationError
+class InfluxWriteJob < ActiveJob::Base
+  queue_as :default
+  GEMINI_CLIENT = GeminiClient.new
+
+  def try_write(data)
+    crypto_reading = GEMINI_CLIENT.try_read_ticker()
+
+    influx_client = InfluxClient.new
+    influx_client.write(data)
+  end
+
 end
